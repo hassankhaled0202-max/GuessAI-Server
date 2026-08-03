@@ -3,14 +3,33 @@ import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
-import { isGuessCorrect } from './utils/guessUtils.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Initialize Gemini Client lazily or safely if API key exists
+// دالة التحقق من التخمين مدمجة مباشرة لتجنب مشاكل المسارات
+function isGuessCorrect(userGuess: string, acceptedNames: string[]): boolean {
+  if (!userGuess || !acceptedNames || acceptedNames.length === 0) return false;
+  const normalize = (str: string) =>
+    str
+      .toLowerCase()
+      .trim()
+      .replace(/^(ال|ألف ال|إلخ)/g, '')
+      .replace(/[إأآا]/g, 'ا')
+      .replace(/ة/g, 'ه')
+      .replace(/ى/g, 'ي')
+      .replace(/[^a-z0-9u0600-u06ff\s]/g, '');
+
+  const cleanUserGuess = normalize(userGuess);
+  return acceptedNames.some(name => {
+    const cleanName = normalize(name);
+    return cleanName === cleanUserGuess || cleanName.includes(cleanUserGuess) || cleanUserGuess.includes(cleanName);
+  });
+}
+
+// Initialize Gemini Client
 function getGeminiAI() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
@@ -32,14 +51,13 @@ function buildChatSystemInstruction(characterName: string): string {
 1. تقمص الشخصية ورد باللهجة العامية المصرية اللطيفة والمرحة.
 2. استخدم الإيموجيز المناسبة بذكاء.
 3. إجاباتك يجب أن تكون قصيرة جداً ومختصرة (من كلمة إلى 4 كلمات بحد أقصى).
-4. ممنوع منعاً باتاً ذكر اسمك الحقيقي.
-5. ممنوع منعاً باتاً ذكر أسماء أعمالك المشهورة. إذا سألك عنها، أجب بغموض تام. لا تفضح هويتك أبداً!`;
+4. ممنوع منعاً باتاً ذكر اسمك الحقيقي أو أعمالك المشهورة. خليك غامض جداً!`;
 }
 
 function buildChatUserMessage(userMessage: string): string {
   return `سؤال اللاعب: ${userMessage}
 
-[تنبيه إجباري للنظام: رد باللهجة العامية المصرية وبأسلوب مرح مع إيموجيز. الإجابة قصيرة جداً (لا تتعدى 4 كلمات). ممنوع تماماً ذكر اسمك أو إنجازاتك. خليك غامض.]`;
+[تنبيه إجباري للنظام: رد باللهجة العامية المصرية وبأسلوب مرح مع إيموجيز. الإجابة قصيرة جداً (لا تتعدى 4 كلمات). ممنوع تماماً ذكر اسمك أو إنجازاتك.]`;
 }
 
 function getLocalSmartAnswer(character: Record<string, any>, question: string): string {
