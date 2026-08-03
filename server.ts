@@ -6,7 +6,7 @@ import { GoogleGenAI } from '@google/genai';
 import { isGuessCorrect } from './src/utils/guessUtils';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
@@ -93,6 +93,14 @@ function getLocalSmartAnswer(character: Record<string, any>, question: string): 
   return 'سؤال حلو! دور في حتة تانية أحسن 😉✨';
 }
 
+function getLocalSmartHint(character: Record<string, any>, conversation: any[]): string {
+  const hints = character.hints || [];
+  if (hints.length > 0) {
+    return hints[Math.floor(Math.random() * hints.length)];
+  }
+  return `فكر في العصر اللي عاشت فيه الشخصية (${character.era}) ومنطقتها (${character.region})! 🤔`;
+}
+
 // API Routes
 app.post('/api/chat', async (req, res) => {
   try {
@@ -150,7 +158,7 @@ app.post('/api/hint', async (req, res) => {
               .join('\n')
           : '';
 
-const prompt = `اللاعب يقود حواراً لتخمين شخصية تاريخية أو عالمية غامضة في لعبة "GuessAI".
+        const prompt = `اللاعب يقود حواراً لتخمين شخصية تاريخية أو عالمية غامضة في لعبة "GuessAI".
 الشخصية السرية هي: "${character.name}" (${character.title} - ${character.description}).
 عصر الشخصية: ${character.era}، منطقتها: ${character.region}.
 
@@ -161,9 +169,10 @@ ${formattedHistory || 'لا يوجد أسئلة سابقة بعد.'}
 قواعد صارمة:
 1. يمنع منعاً باتاً ذكر اسم الشخصية "${character.name}"!
 2. أجب باللهجة العامية المصرية وبأسلوب "روش" ومرح جداً، واستخدم الإيموجيز المناسبة بكثرة لجعله ممتعاً.
-3. وجه اللاعب لنقطة أو زاوية لم يفكر بها بناءً على أسئلته.`
+3. وجه اللاعب لنقطة أو زاوية لم يفكر بها بناءً على أسئلته.`;
+
         const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
+          model: 'gemini-2.5-flash',
           contents: prompt,
           config: {
             temperature: 0.7,
@@ -221,8 +230,9 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  app.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
 
 startServer();
