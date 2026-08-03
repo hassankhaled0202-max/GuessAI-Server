@@ -3,7 +3,7 @@ import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
-import { isGuessCorrect } from './utils/guessUtils';
+import { isGuessCorrect } from './utils/guessUtils.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
