@@ -1,0 +1,6 @@
+{
+  "name": "GuessAI",
+  "description": "تطبيق مسابقات وتخمين الشخصيات بالذكاء الاصطناعي بلغة عربية وأجواء غامضة فاخرة",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
