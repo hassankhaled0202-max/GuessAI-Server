@@ -2,10 +2,13 @@ import { Character, GameStats, Achievement } from '../types';
 import { INITIAL_ACHIEVEMENTS } from '../data/achievementsData';
 import { isGuessCorrect } from './guessUtils';
 
+// رابط السيرفر الأونلاين على Render
+const API_BASE_URL = 'https://guessai-server.onrender.com';
+
 // API Fetch helper
 export async function askAiQuestion(character: Character, question: string): Promise<string> {
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch(`${API_BASE_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ character, question }),
@@ -25,7 +28,7 @@ export async function askAiQuestion(character: Character, question: string): Pro
 
 export async function askAiHint(character: Character, conversation: any[]): Promise<string> {
   try {
-    const res = await fetch('/api/hint', {
+    const res = await fetch(`${API_BASE_URL}/api/hint`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ character, conversation }),
@@ -52,7 +55,7 @@ export async function askAiHint(character: Character, conversation: any[]): Prom
 
 export async function verifyGuess(character: Character, guess: string): Promise<{ isCorrect: boolean; characterName: string; title: string; description: string }> {
   try {
-    const res = await fetch('/api/guess', {
+    const res = await fetch(`${API_BASE_URL}/api/guess`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ character, guess }),

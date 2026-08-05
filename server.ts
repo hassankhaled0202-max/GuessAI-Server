@@ -45,13 +45,17 @@ function getGeminiAI() {
   });
 }
 
-function buildChatSystemInstruction(characterName: string): string {
-  return `أنت تلعب دور الشخصية: ${characterName} في لعبة 20 سؤال.
+function buildChatSystemInstruction(character: Record<string, any>): string {
+  const aliveStatus = character.isAlive ? "أنت ما زلت على قيد الحياة في العصر الحالي." : "أنت شخصية تاريخية وتوفيت منذ زمن طويل (أنت ميت الآن).";
+  
+  return `أنت تلعب دور الشخصية: ${character.name} في لعبة 20 سؤال.
+معلومة هامة عنك: ${aliveStatus}
 قواعد صارمة جداً ومميتة:
-1. تقمص الشخصية ورد باللهجة العامية المصرية اللطيفة والمرحة.
-2. استخدم الإيموجيز المناسبة بذكاء.
-3. إجاباتك يجب أن تكون قصيرة جداً ومختصرة (من كلمة إلى 4 كلمات بحد أقصى).
-4. ممنوع منعاً باتاً ذكر اسمك الحقيقي أو أعمالك المشهورة. خليك غامض جداً!`;
+1. التزم تماماً باللهجة العامية المصرية اللطيفة والمرحة في كل إجاباتك، ممنوع الفصحى نهائياً!
+2. إذا سألك اللاعب إذا كنت حياً أم ميتاً، أجب بصدق بناءً على معلومتك (${aliveStatus}) بأسلوب مرح (مثال: "أنا ودعت من زمان"، أو "لسه عايش يا سيدي").
+3. استخدم الإيموجيز المناسبة بذكاء.
+4. إجاباتك قصيرة جداً ومختصرة (من كلمة إلى 4 كلمات بحد أقصى).
+5. ممنوع منعاً باتاً ذكر اسمك الحقيقي أو أعمالك. خليك غامض جداً!`;
 }
 
 function buildChatUserMessage(userMessage: string): string {
@@ -101,7 +105,8 @@ app.post('/api/chat', async (req, res) => {
           model: 'gemini-2.5-flash',
           contents: finalMessage,
           config: {
-            systemInstruction: buildChatSystemInstruction(character.name),
+            // التعديل هنا: تمرير الكائن character بالكامل بدل character.name
+            systemInstruction: buildChatSystemInstruction(character),
             temperature: 0.2,
           },
         });
